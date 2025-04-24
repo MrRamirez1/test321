@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Бомбардировщик против танка</title>
+    <style>
+        /* Все стили из предыдущего примера */
+        body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
+        #game-container { position: relative; width: 100vw; height: 100vh; background-color: #87CEEB; overflow: hidden; }
+        #ground { position: absolute; bottom: 0; width: 100%; height: 60px; background-color: #8B4513; }
+        /* ... остальные стили ... */
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <!-- Все элементы игры из предыдущего примера -->
+        <div id="ground"></div>
+        <div id="score-display">Попаданий: 0</div>
+        <!-- ... остальные элементы ... -->
+    </div>
+
+    <!-- Добавляем Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+
+    <script>
+        // Вставьте свою конфигурацию Firebase здесь
+       const firebaseConfig = {
+  apiKey: "AIzaSyD5kpNMzbNhhiFdsAdN2zoXV3P0yJzTP7A",
+  authDomain: "test-19fe1.firebaseapp.com",
+  databaseURL: "https://test-19fe1-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "test-19fe1",
+  storageBucket: "test-19fe1.firebasestorage.app",
+  messagingSenderId: "814438337069",
+  appId: "1:814438337069:web:73d4ba2702c01c5f0206a4"
+};
+
+        // Инициализация Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Полный код игры из предыдущего примера
+        const gameContainer = document.getElementById('game-container');
+        // ... весь остальной JavaScript код ...
+        
+        // Функция сохранения результатов
+        function saveScore() {
+            if (!nickname) return;
+            
+            const now = new Date();
+            const dateStr = `${now.getDate()}.${now.getMonth()+1}.${now.getFullYear()}`;
+            
+            database.ref('scores').push().set({
+                nickname: nickname,
+                score: score,
+                date: dateStr,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            }).then(() => {
+                console.log("Результат сохранен");
+                updateLeaderboard();
+            }).catch(error => {
+                console.error("Ошибка сохранения:", error);
+            });
+        }
+
+        // Функция обновления таблицы лидеров
+        function updateLeaderboard() {
+            database.ref('scores')
+                .orderByChild('score')
+                .limitToLast(10)
+                .once('value')
+                .then(snapshot => {
+                    const scores = [];
+                    snapshot.forEach(child => {
+                        scores.push(child.val());
+                    });
+                    
+                    // Сортируем по убыванию очков
+                    scores.sort((a, b) => b.score - a.score);
+                    
+                    // Отображаем результаты
+                    displayLeaderboard(scores);
+                });
+        }
+
+        // ... остальные функции игры ...
+    </script>
+</body>
+</html>
